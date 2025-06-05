@@ -16,11 +16,18 @@
             <div class="form-group">
                 <label asp-for="{{name}}" class="control-label"></label>
                 {{#if (eq type "boolean")}}
-                <input asp-for="{{name}}" class="form-check-input" type="checkbox" />
+                <input asp-for="{{name}}" class="form-check-input" type="checkbox" {{clientValidation this}} />
                 {{else if (eq type "DateTime")}}
-                <input asp-for="{{name}}" class="form-control" type="datetime-local" />
+                <input asp-for="{{name}}" class="form-control" type="datetime-local" {{clientValidation this}} />
+                {{else if (eq type "enum")}}
+                <select asp-for="{{name}}" class="form-control" {{clientValidation this}}>
+                    <option value="">-- Select {{name}} --</option>
+                    {{#each options}}
+                    <option value="{{this}}">{{this}}</option>
+                    {{/each}}
+                </select>
                 {{else}}
-                <input asp-for="{{name}}" class="form-control" />
+                <input asp-for="{{name}}" class="form-control" {{clientValidation this}} />
                 {{/if}}
                 <span asp-validation-for="{{name}}" class="text-danger"></span>
             </div>

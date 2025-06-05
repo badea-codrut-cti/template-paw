@@ -40,14 +40,13 @@ const appDescription: DefinitionsSchema = {
     id: { name: "Id", type: "int", required: true, autoIncrement: true }
   },
   roles: [
-    { name: "Admin", setOnDefault: true },
-    { name: "User", setOnDefault: false }
+    { name: "Admin", setOnDefault: true }
   ],
   pages: [
     {
       entity: "Concurs",
       operations: [
-        { type: "list", requiredRole: "User" },
+        { type: "list" },
         { type: "create", requiredRole: "Admin" },
         { type: "update", requiredRole: "Admin" },
         { type: "delete", requiredRole: "Admin" }
@@ -56,8 +55,8 @@ const appDescription: DefinitionsSchema = {
     {
       entity: "Concurent",
       operations: [
-        { type: "list", requiredRole: "User" },
-        { type: "create", requiredRole: "User" },
+        { type: "list" },
+        { type: "create" },
         { type: "update", requiredRole: "Admin" },
         { type: "delete", requiredRole: "Admin" }
       ]

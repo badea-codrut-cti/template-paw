@@ -5,7 +5,7 @@
 /**
  * Allowed primitive field types.
  */
-export type FieldType = 'string' | 'int' | 'float' | 'DateTime' | 'boolean';
+export type FieldType = 'string' | 'int' | 'float' | 'DateTime' | 'boolean' | 'enum';
 
 /**
  * Base definition for any property.
@@ -50,13 +50,22 @@ export interface BooleanPropertyDefinition extends BaseProperty {
 }
 
 /**
+ * Enum property with predefined options.
+ */
+export interface EnumPropertyDefinition extends BaseProperty {
+  type: 'enum';
+  options: string[];
+}
+
+/**
  * A property must be one of the specialized definitions.
  */
 export type PropertyDefinition =
   | StringPropertyDefinition
   | NumericPropertyDefinition
   | DatePropertyDefinition
-  | BooleanPropertyDefinition;
+  | BooleanPropertyDefinition
+  | EnumPropertyDefinition;
 
 /**
  * Define a relation between entities by entity name.

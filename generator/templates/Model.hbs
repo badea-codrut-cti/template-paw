@@ -22,6 +22,9 @@ namespace AspPrep.Models
         {{#if min}}
         [Range({{min}}, {{max}})]
         {{/if}}
+        {{#if options}}
+        [RegularExpression("^({{#each options}}{{this}}{{#unless @last}}|{{/unless}}{{/each}})$")]
+        {{/if}}
         public {{csharpType type}} {{name}} { get; set; }
 
         {{/each}}

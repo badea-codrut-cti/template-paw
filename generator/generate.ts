@@ -152,10 +152,21 @@ Handlebars.registerHelper('csharpType', (type: string) => {
     case 'float': return 'float';
     case 'DateTime': return 'DateTime';
     case 'boolean': return 'bool';
+    case 'enum': return 'string';
     default: return 'object';
   }
 });
 
 Handlebars.registerHelper('eq', (a: any, b: any) => a === b);
+
+Handlebars.registerHelper('clientValidation', (property: any) => {
+  const attrs = [];
+  if (property.required) attrs.push('required');
+  if (property.minLength) attrs.push(`minlength="${property.minLength}"`);
+  if (property.maxLength) attrs.push(`maxlength="${property.maxLength}"`);
+  if (property.min !== undefined) attrs.push(`min="${property.min}"`);
+  if (property.max !== undefined) attrs.push(`max="${property.max}"`);
+  return attrs.join(' ');
+});
 
 program.parse();
