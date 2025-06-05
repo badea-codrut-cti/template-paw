@@ -160,7 +160,7 @@ Handlebars.registerHelper('csharpType', (type: string) => {
 Handlebars.registerHelper('eq', (a: any, b: any) => a === b);
 
 Handlebars.registerHelper('clientValidation', (property: any) => {
-  const attrs = [];
+  const attrs: string[] = [];
   if (property.required) attrs.push('required');
   if (property.minLength) attrs.push(`minlength="${property.minLength}"`);
   if (property.maxLength) attrs.push(`maxlength="${property.maxLength}"`);
