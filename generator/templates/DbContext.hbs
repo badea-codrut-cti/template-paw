@@ -1,0 +1,35 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using AspPrep.Models;
+
+namespace {{namespace}}
+{
+    public class ApplicationDbContext : IdentityDbContext
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
+
+        {{#each entities}}
+        public DbSet<{{name}}> {{name}} { get; set; }
+        {{/each}}
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            {{#each entities}}
+            {{#if relations}}
+            // Configure relationships for {{name}}
+            {{#each relations}}
+            modelBuilder.Entity<{{../name}}>()
+                .HasOne(e => e.{{navigationProperty}})
+                .WithMany()
+                .HasForeignKey("{{../name}}Id");
+            {{/each}}
+            {{/if}}
+            {{/each}}
+        }
+    }
+}

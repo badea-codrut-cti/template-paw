@@ -1,0 +1,35 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AspPrep.Models
+{
+    [Table("{{entity.table}}")]
+    public class {{entity.name}}
+    {
+        {{#each properties}}
+        {{#if autoIncrement}}
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        {{/if}}
+        {{#if required}}
+        [Required]
+        {{/if}}
+        {{#if minLength}}
+        [StringLength({{maxLength}}, MinimumLength = {{minLength}})]
+        {{else if maxLength}}
+        [StringLength({{maxLength}})]
+        {{/if}}
+        {{#if min}}
+        [Range({{min}}, {{max}})]
+        {{/if}}
+        public {{csharpType type}} {{name}} { get; set; }
+
+        {{/each}}
+        {{#if entity.relations}}
+        // Navigation properties
+        {{#each entity.relations}}
+        public virtual {{targetEntity}} {{navigationProperty}} { get; set; }
+        {{/each}}
+        {{/if}}
+    }
+}

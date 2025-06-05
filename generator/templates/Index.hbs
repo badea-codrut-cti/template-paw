@@ -1,0 +1,53 @@
+@model IEnumerable<AspPrep.Models.{{entity.name}}>
+
+@{
+    ViewData["Title"] = "{{entity.name}} List";
+}
+
+<h1>{{entity.name}} List</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            {{#each entity.properties}}
+            <th>
+                @Html.DisplayNameFor(model => model.{{name}})
+            </th>
+            {{/each}}
+            {{#if entity.relations}}
+            {{#each entity.relations}}
+            <th>
+                {{navigationProperty}}
+            </th>
+            {{/each}}
+            {{/if}}
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            {{#each entity.properties}}
+            <td>
+                @Html.DisplayFor(modelItem => item.{{name}})
+            </td>
+            {{/each}}
+            {{#if entity.relations}}
+            {{#each entity.relations}}
+            <td>
+                @Html.DisplayFor(modelItem => item.{{navigationProperty}}.Nume)
+            </td>
+            {{/each}}
+            {{/if}}
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

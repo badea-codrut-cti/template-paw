@@ -1,0 +1,194 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using AspPrep.Data;
+using AspPrep.Models;
+using Microsoft.AspNetCore.Authorization;
+
+namespace AspPrep.Controllers
+{
+    public class {{entity.name}}Controller : Controller
+    {
+        private readonly ApplicationDbContext _context;
+
+        public {{entity.name}}Controller(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        {{#each pageConfig.operations}}
+        {{#if (eq type "list")}}
+        // GET: {{../entity.name}}
+        {{#if requiredRole}}
+        [Authorize(Roles = "{{requiredRole}}")]
+        {{/if}}
+        public async Task<IActionResult> Index()
+        {
+            {{#if ../entity.relations}}
+            var items = await _context.{{../entity.name}}.Include({{#each ../entity.relations}}m => m.{{navigationProperty}}{{#unless @last}}).Include({{/unless}}{{/each}}).ToListAsync();
+            {{else}}
+            var items = await _context.{{../entity.name}}.ToListAsync();
+            {{/if}}
+            return View(items);
+        }
+        {{/if}}
+
+        {{#if (eq type "create")}}
+        // GET: {{../entity.name}}/Create
+        {{#if requiredRole}}
+        [Authorize(Roles = "{{requiredRole}}")]
+        {{/if}}
+        public IActionResult Create()
+        {
+            {{#if ../entity.relations}}
+            {{#each ../entity.relations}}
+            ViewData["{{navigationProperty}}List"] = _context.{{targetEntity}}.ToList();
+            {{/each}}
+            {{/if}}
+            return View();
+        }
+
+        // POST: {{../entity.name}}/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        {{#if requiredRole}}
+        [Authorize(Roles = "{{requiredRole}}")]
+        {{/if}}
+        public async Task<IActionResult> Create([Bind("{{#each ../entity.properties}}{{name}}{{#unless @last}},{{/unless}}{{/each}}")] {{../entity.name}} item)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(item);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            {{#if ../entity.relations}}
+            {{#each ../entity.relations}}
+            ViewData["{{navigationProperty}}List"] = _context.{{targetEntity}}.ToList();
+            {{/each}}
+            {{/if}}
+            return View(item);
+        }
+        {{/if}}
+
+        {{#if (eq type "update")}}
+        // GET: {{../entity.name}}/Edit/5
+        {{#if requiredRole}}
+        [Authorize(Roles = "{{requiredRole}}")]
+        {{/if}}
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var item = await _context.{{../entity.name}}.FindAsync(id);
+            if (item == null)
+            {
+                return NotFound();
+            }
+            {{#if ../entity.relations}}
+            {{#each ../entity.relations}}
+            ViewData["{{navigationProperty}}List"] = _context.{{targetEntity}}.ToList();
+            {{/each}}
+            {{/if}}
+            return View(item);
+        }
+
+        // POST: {{../entity.name}}/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        {{#if requiredRole}}
+        [Authorize(Roles = "{{requiredRole}}")]
+        {{/if}}
+        public async Task<IActionResult> Edit(int id, [Bind("Id,{{#each ../entity.properties}}{{name}}{{#unless @last}},{{/unless}}{{/each}}")] {{../entity.name}} item)
+        {
+            if (id != item.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(item);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!{{../entity.name}}Exists(item.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            {{#if ../entity.relations}}
+            {{#each ../entity.relations}}
+            ViewData["{{navigationProperty}}List"] = _context.{{targetEntity}}.ToList();
+            {{/each}}
+            {{/if}}
+            return View(item);
+        }
+        {{/if}}
+
+        {{#if (eq type "delete")}}
+        // GET: {{../entity.name}}/Delete/5
+        {{#if requiredRole}}
+        [Authorize(Roles = "{{requiredRole}}")]
+        {{/if}}
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            {{#if ../entity.relations}}
+            var item = await _context.{{../entity.name}}
+                .Include({{#each ../entity.relations}}m => m.{{navigationProperty}}{{#unless @last}})
+                .Include({{/unless}}{{/each}})
+                .FirstOrDefaultAsync(m => m.Id == id);
+            {{else}}
+            var item = await _context.{{../entity.name}}
+                .FirstOrDefaultAsync(m => m.Id == id);
+            {{/if}}
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            return View(item);
+        }
+
+        // POST: {{../entity.name}}/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        {{#if requiredRole}}
+        [Authorize(Roles = "{{requiredRole}}")]
+        {{/if}}
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var item = await _context.{{../entity.name}}.FindAsync(id);
+            if (item != null)
+            {
+                _context.{{../entity.name}}.Remove(item);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+        {{/if}}
+        {{/each}}
+
+        private bool {{entity.name}}Exists(int id)
+        {
+            return _context.{{entity.name}}.Any(e => e.Id == id);
+        }
+    }
+}

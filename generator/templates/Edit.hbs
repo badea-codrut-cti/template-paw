@@ -1,0 +1,53 @@
+@model AspPrep.Models.{{entity.name}}
+
+@{
+    ViewData["Title"] = "Edit {{entity.name}}";
+}
+
+<h1>Edit {{entity.name}}</h1>
+
+<h4>{{entity.name}}</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            {{#each entity.properties}}
+            <div class="form-group">
+                <label asp-for="{{name}}" class="control-label"></label>
+                {{#if (eq type "boolean")}}
+                <input asp-for="{{name}}" class="form-check-input" type="checkbox" />
+                {{else if (eq type "DateTime")}}
+                <input asp-for="{{name}}" class="form-control" type="datetime-local" />
+                {{else}}
+                <input asp-for="{{name}}" class="form-control" />
+                {{/if}}
+                <span asp-validation-for="{{name}}" class="text-danger"></span>
+            </div>
+            {{/each}}
+            {{#if entity.relations}}
+            {{#each entity.relations}}
+            <div class="form-group">
+                <label asp-for="{{../name}}Id" class="control-label">{{navigationProperty}}</label>
+                <select asp-for="{{../name}}Id" class="form-control" asp-items="@(new SelectList(ViewData["{{navigationProperty}}List"] as IEnumerable<dynamic>, "Id", "Nume"))">
+                    <option value="">-- Select {{navigationProperty}} --</option>
+                </select>
+                <span asp-validation-for="{{../name}}Id" class="text-danger"></span>
+            </div>
+            {{/each}}
+            {{/if}}
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
