@@ -22,6 +22,24 @@ export interface RelationDefinition {
   foreignKey: string;
 }
 
+export type PageOperation = 'list' | 'create' | 'update' | 'delete';
+
+export interface OperationDefinition {
+  type: PageOperation;
+  requiredRole?: string;
+}
+
+export interface PageDefinition {
+  entity: string;
+  operations: OperationDefinition[];
+  queryParams?: string[];
+}
+
+export interface RoleDefinition {
+  name: string;
+  setOnDefault: boolean;
+}
+
 export interface EntityDefinition {
   name: string;
   table: string;
@@ -36,9 +54,10 @@ export interface DefaultDefinitions {
 export interface DefinitionsSchema {
   entities: EntityDefinition[];
   defaults: DefaultDefinitions;
+  roles: RoleDefinition[];
+  pages: PageDefinition[];
 }
 
 // Load the JSON schema
-const definitions: DefinitionsSchema = require('./definitions.json');
-
-export default definitions;
+import definitions from './definitions.json';
+export default definitions as DefinitionsSchema;

@@ -28,5 +28,63 @@
   ],
   "defaults": {
     "id": { "type": "int", "autoIncrement": true, "required": true }
-  }
+  },
+  "roles": [
+    { "name": "Admin", "setOnDefault": true },
+    { "name": "User", "setOnDefault": false }
+  ],
+  "pages": [
+    {
+      "entity": "Concurs",
+      "operations": [
+        { "type": "list", "requiredRole": "User" }
+      ]
+    },
+    {
+      "entity": "Concurs",
+      "operations": [
+        { "type": "create", "requiredRole": "Admin" }
+      ]
+    },
+    {
+      "entity": "Concurs",
+      "operations": [
+        { "type": "update", "requiredRole": "Admin" }
+      ],
+      "queryParams": ["id"]
+    },
+    {
+      "entity": "Concurs",
+      "operations": [
+        { "type": "delete", "requiredRole": "Admin" }
+      ],
+      "queryParams": ["id"]
+    },
+    {
+      "entity": "Concurent",
+      "operations": [
+        { "type": "list", "requiredRole": "User" }
+      ]
+    },
+    {
+      "entity": "Concurent",
+      "operations": [
+        { "type": "create", "requiredRole": "User" }
+      ]
+    },
+    {
+      "entity": "Concurent",
+      "operations": [
+        { "type": "update", "requiredRole": "Admin" }
+      ],
+      "queryParams": ["id"]
+    },
+    {
+      "entity": "Concurent",
+      "operations": [
+        { "type": "delete", "requiredRole": "Admin" }
+      ],
+      "queryParams": ["id"]
+    }
+  ]
 }
