@@ -16,9 +16,6 @@ const appDescription: DefinitionsSchema = {
         { name: "Categorie", type: "string", required: true, minLength: 3, maxLength: 50 },
         { name: "NrMaxParticipanti", type: "int", required: true, min: 1, max: 100 },
         { name: "RestrictieVarsta", type: "boolean", required: true }
-      ],
-      relations: [
-        { navigationProperty: "Concurs", targetEntity: "Concurs" }
       ]
     },
     {

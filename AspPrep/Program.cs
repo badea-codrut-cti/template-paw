@@ -32,8 +32,8 @@ using (var scope = app.Services.CreateScope())
             roleManager.CreateAsync(new IdentityRole(role)).Wait();
         }
     }
-    var adminEmail = "admin@example.com";
-    var adminPassword = "Admin123!";
+    var adminEmail = "oreoezi@oreo.ac";
+    var adminPassword = "Bobita1!";
     var adminUser = userManager.FindByEmailAsync(adminEmail).Result;
     if (adminUser == null)
     {

@@ -25,7 +25,7 @@ namespace AspPrep.Models
         {{#if options}}
         [RegularExpression("^({{#each options}}{{this}}{{#unless @last}}|{{/unless}}{{/each}})$")]
         {{/if}}
-        public {{csharpType type}} {{name}} { get; set; }
+        public {{csharpType type}}{{#unless required}}?{{/unless}} {{name}} { get; set; }{{#if required}} = default!;{{/if}}
 
         {{/each}}
         {{#if entity.relations}}
