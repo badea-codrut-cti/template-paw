@@ -33,7 +33,7 @@ namespace AspPrep.Models
         {{#if entity.relations}}
         // Navigation properties
         {{#each entity.relations}}
-        public virtual {{targetEntity}} {{navigationProperty}} { get; set; }
+        public virtual {{targetEntity}}? {{navigationProperty}} { get; set; }
         {{/each}}
         {{/if}}
     }

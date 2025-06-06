@@ -1,0 +1,32 @@
+@using AspPrep.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        {{#each pages}}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="{{entity}}Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {{entity}}
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="{{entity}}Dropdown">
+            {{#each operations}}
+              {{#if requiredRole}}
+                @if (User.IsInRole("{{requiredRole}}")) {
+                  <li><a class="dropdown-item" asp-controller="{{../entity}}" asp-action="{{capitalize type}}">{{capitalize type}}</a></li>
+                }
+              {{else}}
+                <li><a class="dropdown-item" asp-controller="{{../entity}}" asp-action="{{capitalize type}}">{{capitalize type}}</a></li>
+              {{/if}}
+            {{/each}}
+          </ul>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+  </div>
+</nav>

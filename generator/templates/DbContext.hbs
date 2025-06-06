@@ -26,7 +26,7 @@ namespace {{namespace}}
             modelBuilder.Entity<{{../name}}>()
                 .HasOne(e => e.{{navigationProperty}})
                 .WithMany()
-                .HasForeignKey("{{../name}}Id");
+                .HasForeignKey(e => e.{{navigationProperty}}Id);
             {{/each}}
             {{/if}}
             {{/each}}

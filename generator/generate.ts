@@ -10,6 +10,10 @@ import fs from 'fs-extra';
 import path from 'path';
 import Handlebars from 'handlebars';
 import appDescription from './appdescription';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const program = new Command();
 
@@ -46,6 +50,15 @@ program
   });
 
 program
+  .command('layout')
+  .description('Generate shared layout')
+  .action(async () => {
+    console.log(chalk.blue('Generating layout...'));
+    await generateLayout();
+    console.log(chalk.green('✓ Layout generated'));
+  });
+
+program
   .command('all')
   .description('Generate all code')
   .action(async () => {
@@ -53,6 +66,7 @@ program
     await generateModels();
     await generateDbContext();
     await generateControllers();
+    await generateLayout();
     console.log(chalk.green('✓ All code generated'));
   });
 
@@ -144,6 +158,17 @@ async function generateControllers() {
   }
 }
 
+async function generateLayout() {
+  const template = await fs.readFile(path.join(__dirname, 'templates', 'Layout.hbs'), 'utf8');
+  const compile = Handlebars.compile(template);
+  
+  const content = compile({ pages: appDescription.pages });
+  const outputPath = path.join('AspPrep', 'Views', 'Shared', '_Layout.cshtml');
+  await fs.ensureDir(path.dirname(outputPath));
+  await fs.writeFile(outputPath, content);
+  console.log(chalk.gray(`  Generated ${outputPath}`));
+}
+
 // Register Handlebars helpers
 Handlebars.registerHelper('csharpType', (type: string) => {
   switch (type) {
@@ -158,6 +183,8 @@ Handlebars.registerHelper('csharpType', (type: string) => {
 });
 
 Handlebars.registerHelper('eq', (a: any, b: any) => a === b);
+
+Handlebars.registerHelper('capitalize', (str: string) => str.charAt(0).toUpperCase() + str.slice(1));
 
 Handlebars.registerHelper('clientValidation', (property: any) => {
   const attrs: string[] = [];
