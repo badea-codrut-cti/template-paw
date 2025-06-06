@@ -9,7 +9,7 @@ rm -rf AspPrep/Views/Concurs AspPrep/Views/Concurent 2>/dev/null
 
 # Remove all migrations except Identity
 cd AspPrep
-find Migrations -name "*.cs" ! -name "*InitialIdentity*" -delete 2>/dev/null
+find Data/Migrations -name "*.cs" ! -name "*InitialIdentity*" -delete 2>/dev/null
 
 # Reset DbContext to clean state
 cat > Data/ApplicationDbContext.cs << 'EOF'

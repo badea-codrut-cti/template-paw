@@ -135,7 +135,7 @@ async function generateControllers() {
       }
       
       if (template) {
-        const viewContent = template({ entity, operation });
+        const viewContent = template({ entity, operation, pageConfig });
         const viewPath = path.join(viewsDir, filename);
         await fs.writeFile(viewPath, viewContent);
         console.log(chalk.gray(`  Generated ${viewPath}`));
@@ -161,7 +161,8 @@ Handlebars.registerHelper('eq', (a: any, b: any) => a === b);
 
 Handlebars.registerHelper('clientValidation', (property: any) => {
   const attrs: string[] = [];
-  if (property.required) attrs.push('required');
+  // Skip required attribute for boolean fields to avoid forcing check
+  if (property.required && property.type !== 'boolean') attrs.push('required');
   if (property.minLength) attrs.push(`minlength="${property.minLength}"`);
   if (property.maxLength) attrs.push(`maxlength="${property.maxLength}"`);
   if (property.min !== undefined) attrs.push(`min="${property.min}"`);

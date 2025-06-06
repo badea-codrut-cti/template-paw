@@ -47,7 +47,8 @@ const appDescription: DefinitionsSchema = {
         { type: "create", requiredRole: "Admin" },
         { type: "update", requiredRole: "Admin" },
         { type: "delete", requiredRole: "Admin" }
-      ]
+      ],
+      searchFields: ["Nume", "Categorie"]
     },
     {
       entity: "Concurent",
@@ -56,7 +57,8 @@ const appDescription: DefinitionsSchema = {
         { type: "create" },
         { type: "update", requiredRole: "Admin" },
         { type: "delete", requiredRole: "Admin" }
-      ]
+      ],
+      searchFields: ["Nume", "Prenume", "Tara"]
     }
   ]
 };

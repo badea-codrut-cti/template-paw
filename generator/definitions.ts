@@ -91,7 +91,7 @@ export interface OperationDefinition {
 export interface PageDefinition {
   entity: string;
   operations: OperationDefinition[];
-  queryParams?: string[];
+  searchFields?: string[]; // deprecated queryParams, use searchFields for listing filters
 }
 
 /**

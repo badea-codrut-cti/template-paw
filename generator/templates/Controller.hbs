@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using AspPrep.Data;
 using AspPrep.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 namespace AspPrep.Controllers
 {
@@ -21,13 +22,23 @@ namespace AspPrep.Controllers
         {{#if requiredRole}}
         [Authorize(Roles = "{{requiredRole}}")]
         {{/if}}
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index({{#if ../pageConfig.searchFields}}{{#each ../pageConfig.searchFields}}string {{this}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}})
         {
+            var query = _context.{{../entity.name}}.AsQueryable();
             {{#if ../entity.relations}}
-            var items = await _context.{{../entity.name}}.Include({{#each ../entity.relations}}m => m.{{navigationProperty}}{{#unless @last}}).Include({{/unless}}{{/each}}).ToListAsync();
-            {{else}}
-            var items = await _context.{{../entity.name}}.ToListAsync();
+            query = query
+                {{#each ../entity.relations}}.Include(m => m.{{navigationProperty}}){{/each}}
+                .AsQueryable();
             {{/if}}
+            {{#if ../pageConfig.searchFields}}
+            {{#each ../pageConfig.searchFields}}
+            if (!string.IsNullOrEmpty({{this}}))
+            {
+                query = query.Where(e => EF.Property<string>(e, "{{this}}").Contains({{this}}));
+            }
+            {{/each}}
+            {{/if}}
+            var items = await query.ToListAsync();
             return View(items);
         }
         {{/if}}
@@ -151,8 +162,7 @@ namespace AspPrep.Controllers
 
             {{#if ../entity.relations}}
             var item = await _context.{{../entity.name}}
-                .Include({{#each ../entity.relations}}m => m.{{navigationProperty}}{{#unless @last}})
-                .Include({{/unless}}{{/each}})
+                {{#each ../entity.relations}}.Include(m => m.{{navigationProperty}}){{/each}}
                 .FirstOrDefaultAsync(m => m.Id == id);
             {{else}}
             var item = await _context.{{../entity.name}}

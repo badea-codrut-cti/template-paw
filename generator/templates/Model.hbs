@@ -12,7 +12,9 @@ namespace AspPrep.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         {{/if}}
         {{#if required}}
+        {{#unless (eq type "boolean")}}
         [Required]
+        {{/unless}}
         {{/if}}
         {{#if minLength}}
         [StringLength({{maxLength}}, MinimumLength = {{minLength}})]

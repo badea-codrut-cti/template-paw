@@ -6,6 +6,23 @@
 
 <h1>{{entity.name}} List</h1>
 
+{{#if pageConfig.searchFields}}
+<form method="get" class="mb-3">
+    <div class="row">
+        {{#each pageConfig.searchFields}}
+        <div class="col-md-3">
+            <label for="{{this}}" class="form-label">{{this}}</label>
+            <input type="text" class="form-control" id="{{this}}" name="{{this}}" value="@Request.Query["{{this}}"]" />
+        </div>
+        {{/each}}
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary me-2">Search</button>
+            <a href="@Url.Action("Index")" class="btn btn-secondary">Clear</a>
+        </div>
+    </div>
+</form>
+{{/if}}
+
 <p>
     <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
