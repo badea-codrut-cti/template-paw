@@ -6,6 +6,7 @@
 import type { DefinitionsSchema } from './definitions';
 
 const appDescription: DefinitionsSchema = {
+  projectName: "AspPrep",
   entities: [
     {
       name: "Concurs",

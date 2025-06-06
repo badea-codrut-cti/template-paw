@@ -162,7 +162,10 @@ async function generateLayout() {
   const template = await fs.readFile(path.join(__dirname, 'templates', 'Layout.hbs'), 'utf8');
   const compile = Handlebars.compile(template);
   
-  const content = compile({ pages: appDescription.pages });
+  const content = compile({ 
+    pages: appDescription.pages,
+    projectName: appDescription.projectName 
+  });
   const outputPath = path.join('AspPrep', 'Views', 'Shared', '_Layout.cshtml');
   await fs.ensureDir(path.dirname(outputPath));
   await fs.writeFile(outputPath, content);

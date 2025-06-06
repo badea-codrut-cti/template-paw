@@ -123,6 +123,7 @@ export interface DefaultDefinitions {
  * Root schema for code generation definitions.
  */
 export interface DefinitionsSchema {
+  projectName: string;
   entities: EntityDefinition[];
   defaults: DefaultDefinitions;
   roles: RoleDefinition[];

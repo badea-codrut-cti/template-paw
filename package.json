@@ -8,6 +8,7 @@
     "generate:models": "tsx generator/generate.ts models",
     "generate:context": "tsx generator/generate.ts context",
     "generate:controllers": "tsx generator/generate.ts controllers",
+    "generate:layout": "tsx generator/generate.ts layout",
     "generate:all": "tsx generator/generate.ts all"
   },
   "keywords": [],
