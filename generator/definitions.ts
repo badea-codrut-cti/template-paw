@@ -76,6 +76,16 @@ export interface RelationDefinition {
 }
 
 /**
+ * Many-to-many relationship definition between two entities.
+ */
+export interface ManyToManyDefinition {
+  entityA: string;
+  entityB: string;
+  joinEntity: string;
+  table: string;
+}
+
+/**
  * CRUD operations for Razor Pages, with optional role restriction.
  */
 export type PageOperation = 'list' | 'create' | 'update' | 'delete';
@@ -113,6 +123,16 @@ export interface EntityDefinition {
 }
 
 /**
+ * Extended entity definition used internally by the generator.
+ */
+export interface GeneratorEntityDefinition extends EntityDefinition {
+  /**
+   * Internal flag automatically set when generating join entities.
+   */
+  isJoinEntity?: boolean;
+}
+
+/**
  * Default definitions (e.g. implicit id).
  */
 export interface DefaultDefinitions {
@@ -125,6 +145,7 @@ export interface DefaultDefinitions {
 export interface DefinitionsSchema {
   projectName: string;
   entities: EntityDefinition[];
+  manyToMany?: ManyToManyDefinition[];
   defaults: DefaultDefinitions;
   roles: RoleDefinition[];
   pages: PageDefinition[];

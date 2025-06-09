@@ -27,11 +27,32 @@ const appDescription: DefinitionsSchema = {
         { name: "Prenume", type: "string", required: true, minLength: 2, maxLength: 50 },
         { name: "DataNasterii", type: "DateTime", required: true },
         { name: "Tara", type: "string", required: true, minLength: 2, maxLength: 50 },
-        { name: "ConcursId", type: "int", required: true }
       ],
       relations: [
         { navigationProperty: "Concurs", targetEntity: "Concurs" }
       ]
+    },
+    {
+      name: "Band",
+      table: "BAND",
+      properties: [
+        { name: "Name", type: "string", required: true, minLength: 2, maxLength: 50 }
+      ]
+    },
+    {
+      name: "Singer",
+      table: "SINGER",
+      properties: [
+        { name: "Name", type: "string", required: true, minLength: 2, maxLength: 50 }
+      ]
+    }
+  ],
+  manyToMany: [
+    {
+      entityA: "Singer",
+      entityB: "Band",
+      joinEntity: "SingerBand",
+      table: "SINGER_BAND"
     }
   ],
   defaults: {
@@ -60,6 +81,26 @@ const appDescription: DefinitionsSchema = {
         { type: "delete", requiredRole: "Admin" }
       ],
       searchFields: ["Nume", "Prenume", "Tara"]
+    },
+    {
+      entity: "Band",
+      operations: [
+        { type: "list" },
+        { type: "create" },
+        { type: "update", requiredRole: "Admin" },
+        { type: "delete", requiredRole: "Admin" }
+      ],
+      searchFields: ["Name"]
+    },
+    {
+      entity: "Singer",
+      operations: [
+        { type: "list" },
+        { type: "create" },
+        { type: "update", requiredRole: "Admin" },
+        { type: "delete", requiredRole: "Admin" }
+      ],
+      searchFields: ["Name"]
     }
   ]
 };

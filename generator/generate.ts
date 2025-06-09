@@ -10,6 +10,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import Handlebars from 'handlebars';
 import appDescription from './appdescription';
+import { GeneratorEntityDefinition } from './definitions';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -73,9 +74,10 @@ program
 async function generateModels() {
   const template = await fs.readFile(path.join(__dirname, 'templates', 'Model.hbs'), 'utf8');
   const compile = Handlebars.compile(template);
-  
-  for (const entity of appDescription.entities) {
-    const properties = [appDescription.defaults.id, ...entity.properties];
+
+  const allEntities = getAllEntities();
+  for (const entity of allEntities) {
+    const properties = getModelProperties(entity);
     const content = compile({ entity, properties });
     const outputPath = path.join('AspPrep', 'Models', `${entity.name}.cs`);
     await fs.ensureDir(path.dirname(outputPath));
@@ -87,9 +89,10 @@ async function generateModels() {
 async function generateDbContext() {
   const template = await fs.readFile(path.join(__dirname, 'templates', 'DbContext.hbs'), 'utf8');
   const compile = Handlebars.compile(template);
-  
-  const content = compile({ 
-    entities: appDescription.entities,
+
+  const allEntities = getAllEntities();
+  const content = compile({
+    entities: allEntities,
     namespace: 'AspPrep.Data'
   });
   
@@ -97,6 +100,39 @@ async function generateDbContext() {
   await fs.ensureDir(path.dirname(outputPath));
   await fs.writeFile(outputPath, content);
   console.log(chalk.gray(`  Generated ${outputPath}`));
+}
+
+function getAllEntities(): GeneratorEntityDefinition[] {
+  const entities: GeneratorEntityDefinition[] = [...appDescription.entities];
+  if (appDescription.manyToMany) {
+    for (const mm of appDescription.manyToMany) {
+      const joinEntity: GeneratorEntityDefinition = {
+        name: mm.joinEntity,
+        table: mm.table,
+        isJoinEntity: true,
+        properties: [
+          { name: `${mm.entityA}Id`, type: 'int', required: true },
+          { name: `${mm.entityB}Id`, type: 'int', required: true }
+        ],
+        relations: [
+          { navigationProperty: mm.entityA, targetEntity: mm.entityA },
+          { navigationProperty: mm.entityB, targetEntity: mm.entityB }
+        ]
+      };
+      entities.push(joinEntity);
+    }
+  }
+  return entities;
+}
+
+function getModelProperties(entity: GeneratorEntityDefinition) {
+  if (entity.isJoinEntity) {
+    return entity.properties;
+  }
+  const fkProps = entity.relations
+    ? entity.relations.map((r: any) => ({ name: `${r.navigationProperty}Id`, type: 'int', required: true }))
+    : [];
+  return [appDescription.defaults.id, ...entity.properties, ...fkProps];
 }
 
 async function generateControllers() {
@@ -115,9 +151,14 @@ async function generateControllers() {
   for (const entity of appDescription.entities) {
     const pageConfig = appDescription.pages.find(p => p.entity === entity.name);
     if (!pageConfig) continue;
-    
+
+    const entityWithFk: GeneratorEntityDefinition = {
+      ...entity,
+      properties: getModelProperties(entity).slice(1) // remove default id for controllers
+    };
+
     // Generate controller
-    const controllerContent = compileController({ entity, pageConfig });
+    const controllerContent = compileController({ entity: entityWithFk, pageConfig });
     const controllerPath = path.join('AspPrep', 'Controllers', `${entity.name}Controller.cs`);
     await fs.ensureDir(path.dirname(controllerPath));
     await fs.writeFile(controllerPath, controllerContent);
@@ -198,6 +239,11 @@ Handlebars.registerHelper('clientValidation', (property: any) => {
   if (property.min !== undefined) attrs.push(`min="${property.min}"`);
   if (property.max !== undefined) attrs.push(`max="${property.max}"`);
   return attrs.join(' ');
+});
+
+Handlebars.registerHelper('isForeignKey', (propName: string, entity: any) => {
+  if (!entity.relations) return false;
+  return entity.relations.some((r: any) => propName === `${r.navigationProperty}Id`);
 });
 
 program.parse();

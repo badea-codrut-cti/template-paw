@@ -13,7 +13,7 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             {{#each entity.properties}}
-            {{#unless (eq name "ConcursId")}}
+            {{#unless (isForeignKey name ../entity)}}
             <div class="form-group">
                 <label asp-for="{{name}}" class="control-label"></label>
                 {{#if (eq type "boolean")}}
