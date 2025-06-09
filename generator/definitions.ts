@@ -5,7 +5,14 @@
 /**
  * Allowed primitive field types.
  */
-export type FieldType = 'string' | 'int' | 'float' | 'DateTime' | 'boolean' | 'enum';
+export type FieldType =
+  | 'string'
+  | 'int'
+  | 'float'
+  | 'DateTime'
+  | 'Date'
+  | 'boolean'
+  | 'enum';
 
 /**
  * Base definition for any property.
@@ -39,7 +46,7 @@ export interface NumericPropertyDefinition extends BaseProperty {
  * DateTime property (no extra constraints).
  */
 export interface DatePropertyDefinition extends BaseProperty {
-  type: 'DateTime';
+  type: 'DateTime' | 'Date';
 }
 
 /**

@@ -152,13 +152,18 @@ async function generateControllers() {
     const pageConfig = appDescription.pages.find(p => p.entity === entity.name);
     if (!pageConfig) continue;
 
+    const searchFieldDefs = pageConfig.searchFields?.map(f => {
+      const prop = entity.properties.find(p => p.name === f);
+      return { name: f, type: prop?.type || 'string' };
+    });
+
     const entityWithFk: GeneratorEntityDefinition = {
       ...entity,
       properties: getModelProperties(entity).slice(1) // remove default id for controllers
     };
 
     // Generate controller
-    const controllerContent = compileController({ entity: entityWithFk, pageConfig });
+    const controllerContent = compileController({ entity: entityWithFk, pageConfig, searchFieldDefs });
     const controllerPath = path.join('AspPrep', 'Controllers', `${entity.name}Controller.cs`);
     await fs.ensureDir(path.dirname(controllerPath));
     await fs.writeFile(controllerPath, controllerContent);
@@ -190,7 +195,7 @@ async function generateControllers() {
       }
       
       if (template) {
-        const viewContent = template({ entity, operation, pageConfig });
+        const viewContent = template({ entity, operation, pageConfig, searchFieldDefs });
         const viewPath = path.join(viewsDir, filename);
         await fs.writeFile(viewPath, viewContent);
         console.log(chalk.gray(`  Generated ${viewPath}`));
@@ -220,6 +225,7 @@ Handlebars.registerHelper('csharpType', (type: string) => {
     case 'int': return 'int';
     case 'float': return 'float';
     case 'DateTime': return 'DateTime';
+    case 'Date': return 'DateOnly';
     case 'boolean': return 'bool';
     case 'enum': return 'string';
     default: return 'object';
@@ -229,6 +235,20 @@ Handlebars.registerHelper('csharpType', (type: string) => {
 Handlebars.registerHelper('eq', (a: any, b: any) => a === b);
 
 Handlebars.registerHelper('capitalize', (str: string) => str.charAt(0).toUpperCase() + str.slice(1));
+
+Handlebars.registerHelper('searchInputType', (type: string) => {
+  switch (type) {
+    case 'int':
+    case 'float':
+      return 'number';
+    case 'Date':
+      return 'date';
+    case 'DateTime':
+      return 'datetime-local';
+    default:
+      return 'text';
+  }
+});
 
 Handlebars.registerHelper('clientValidation', (property: any) => {
   const attrs: string[] = [];
