@@ -148,9 +148,12 @@ async function generateControllers() {
   const compileEdit = Handlebars.compile(editTemplate);
   const compileDelete = Handlebars.compile(deleteTemplate);
   
-  for (const entity of appDescription.entities) {
-    const pageConfig = appDescription.pages.find(p => p.entity === entity.name);
-    if (!pageConfig) continue;
+  for (const pageConfig of appDescription.pages) {
+    const entity = appDescription.entities.find(e => e.name === pageConfig.entity);
+    if (!entity) {
+      console.warn(chalk.yellow(`⚠ Entity "${pageConfig.entity}" not found for page definition`));
+      continue;
+    }
 
     const searchFieldDefs = pageConfig.searchFields?.map(f => {
       const prop = entity.properties.find(p => p.name === f);
@@ -258,6 +261,7 @@ Handlebars.registerHelper('clientValidation', (property: any) => {
   if (property.maxLength) attrs.push(`maxlength="${property.maxLength}"`);
   if (property.min !== undefined) attrs.push(`min="${property.min}"`);
   if (property.max !== undefined) attrs.push(`max="${property.max}"`);
+  if (property.regex) attrs.push(`pattern="${property.regex}"`);
   return attrs.join(' ');
 });
 

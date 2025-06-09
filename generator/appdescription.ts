@@ -14,7 +14,14 @@ const appDescription: DefinitionsSchema = {
       properties: [
         { name: "Nume", type: "string", required: true, minLength: 3, maxLength: 100 },
         { name: "Data", type: "DateTime", required: true },
-        { name: "Categorie", type: "string", required: true, minLength: 3, maxLength: 50 },
+        {
+          name: "Categorie",
+          type: "string",
+          required: true,
+          minLength: 3,
+          maxLength: 50,
+          regex: "^[A-Za-z]+$"
+        },
         { name: "NrMaxParticipanti", type: "int", required: true, min: 1, max: 100 },
         { name: "RestrictieVarsta", type: "boolean", required: true }
       ]

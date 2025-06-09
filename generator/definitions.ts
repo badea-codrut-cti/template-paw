@@ -31,6 +31,7 @@ export interface StringPropertyDefinition extends BaseProperty {
   type: 'string';
   minLength?: number;
   maxLength?: number;
+  regex?: string;
 }
 
 /**
