@@ -22,6 +22,11 @@ export interface BaseProperty {
   type: FieldType;
   required: boolean;
   autoIncrement?: boolean;
+  /**
+   * Marks this property to be displayed when referenced in relations.
+   * Multiple properties may set this flag to be concatenated in views.
+   */
+  showInRelations?: boolean;
 }
 
 /**
