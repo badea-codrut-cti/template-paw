@@ -50,7 +50,14 @@ const appDescription = {
       name: "Product",
       table: "PRODUCTS", 
       properties: [
-        { name: "Name", type: "string", required: true, minLength: 3, maxLength: 100 },
+        {
+          name: "Name",
+          type: "string",
+          required: true,
+          minLength: 3,
+          maxLength: 100,
+          regex: "^[A-Za-z0-9 ]+$"
+        },
         { name: "Price", type: "float", required: true, min: 0, max: 10000 },
         { name: "Category", type: "enum", required: true, options: ["Electronics", "Books", "Clothing"] }
       ]
@@ -74,11 +81,17 @@ const appDescription = {
 ```
 
 ### Supported Field Types
-- **string**: Text with min/max length validation
+- **string**: Text with min/max length validation or regex pattern
 - **int/float**: Numbers with min/max value validation  
 - **DateTime**: Date and time picker
 - **boolean**: Checkbox
 - **enum**: Dropdown select with predefined options
+
+### Helpful Regex Examples
+Here are some regular expressions you can reuse in property definitions:
+- **Email**: `^[^\s@]+@[^\s@]+\.[^\s@]+$`
+- **Phone number**: `^\+?[0-9]{10,15}$`
+- **URL**: `^(https?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$`
 
 ### Generated Features
 - ✅ Entity models with data annotations

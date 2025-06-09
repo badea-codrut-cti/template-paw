@@ -16,6 +16,37 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function validateSchema() {
+  for (const entity of appDescription.entities) {
+    if (entity.relations) {
+      for (const rel of entity.relations) {
+        const target = appDescription.entities.find(e => e.name === rel.targetEntity);
+        if (!target) {
+          console.warn(
+            chalk.yellow(
+              `Warning: Entity "${entity.name}" has relation "${rel.navigationProperty}" referencing missing entity "${rel.targetEntity}"`
+            )
+          );
+        }
+      }
+    }
+  }
+  if (appDescription.manyToMany) {
+    for (const mm of appDescription.manyToMany) {
+      const aExists = appDescription.entities.some(e => e.name === mm.entityA);
+      const bExists = appDescription.entities.some(e => e.name === mm.entityB);
+      if (!aExists || !bExists) {
+        console.warn(
+          chalk.yellow(
+            `Warning: many-to-many "${mm.joinEntity}" references unknown entity${!aExists && !bExists ? 'ies' : ''} ` +
+              `${!aExists ? mm.entityA : ''}${!aExists && !bExists ? ' and ' : ''}${!bExists ? mm.entityB : ''}`
+          )
+        );
+      }
+    }
+  }
+}
+
 const program = new Command();
 
 program
@@ -148,9 +179,12 @@ async function generateControllers() {
   const compileEdit = Handlebars.compile(editTemplate);
   const compileDelete = Handlebars.compile(deleteTemplate);
   
-  for (const entity of appDescription.entities) {
-    const pageConfig = appDescription.pages.find(p => p.entity === entity.name);
-    if (!pageConfig) continue;
+  for (const pageConfig of appDescription.pages) {
+    const entity = appDescription.entities.find(e => e.name === pageConfig.entity);
+    if (!entity) {
+      console.warn(chalk.yellow(`Warning: Entity "${pageConfig.entity}" not found for page definition`));
+      continue;
+    }
 
     const searchFieldDefs = pageConfig.searchFields?.map(f => {
       const prop = entity.properties.find(p => p.name === f);
@@ -258,6 +292,7 @@ Handlebars.registerHelper('clientValidation', (property: any) => {
   if (property.maxLength) attrs.push(`maxlength="${property.maxLength}"`);
   if (property.min !== undefined) attrs.push(`min="${property.min}"`);
   if (property.max !== undefined) attrs.push(`max="${property.max}"`);
+  if (property.regex) attrs.push(`pattern="${property.regex}"`);
   return attrs.join(' ');
 });
 
@@ -266,4 +301,5 @@ Handlebars.registerHelper('isForeignKey', (propName: string, entity: any) => {
   return entity.relations.some((r: any) => propName === `${r.navigationProperty}Id`);
 });
 
+validateSchema();
 program.parse();
