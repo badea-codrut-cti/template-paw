@@ -63,7 +63,7 @@
             {{#if entity.relations}}
             {{#each entity.relations}}
             <td>
-                @Html.DisplayFor(modelItem => item.{{navigationProperty}}.Nume)
+                @({{{displayInterpolationItem}}})
             </td>
             {{/each}}
             {{/if}}

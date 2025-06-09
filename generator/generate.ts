@@ -166,6 +166,25 @@ function getModelProperties(entity: GeneratorEntityDefinition) {
   return [appDescription.defaults.id, ...entity.properties, ...fkProps];
 }
 
+function getDisplayProperties(entityName: string): string[] {
+  const entity = appDescription.entities.find(e => e.name === entityName);
+  if (!entity) return ['Id'];
+  const props = entity.properties
+    .filter((p: any) => (p as any).showInRelations)
+    .map(p => p.name);
+  return props.length ? props : ['Id'];
+}
+
+function buildInterpolation(varName: string, nav: string, props: string[]): string {
+  const inner = props.map(p => `{${varName}.${nav}.${p}}`).join(' ');
+  return `$"${inner}"`;
+}
+
+function buildSelectExpression(props: string[]): string {
+  const inner = props.map(p => `{m.${p}}`).join(' ');
+  return `$"${inner}"`;
+}
+
 async function generateControllers() {
   const controllerTemplate = await fs.readFile(path.join(__dirname, 'templates', 'Controller.hbs'), 'utf8');
   const indexTemplate = await fs.readFile(path.join(__dirname, 'templates', 'Index.hbs'), 'utf8');
@@ -186,6 +205,19 @@ async function generateControllers() {
       continue;
     }
 
+    const relationsWithDisplay = entity.relations?.map(r => {
+      const props = getDisplayProperties(r.targetEntity);
+      return {
+        ...r,
+        displayProperties: props,
+        displayInterpolationItem: buildInterpolation('item', r.navigationProperty, props),
+        displayInterpolationModel: buildInterpolation('Model', r.navigationProperty, props),
+        selectExpression: buildSelectExpression(props)
+      };
+    });
+
+    const entityForViews = { ...entity, relations: relationsWithDisplay };
+
     const searchFieldDefs = pageConfig.searchFields?.map(f => {
       const prop = entity.properties.find(p => p.name === f);
       return { name: f, type: prop?.type || 'string' };
@@ -193,6 +225,7 @@ async function generateControllers() {
 
     const entityWithFk: GeneratorEntityDefinition = {
       ...entity,
+      relations: relationsWithDisplay,
       properties: getModelProperties(entity).slice(1) // remove default id for controllers
     };
 
@@ -229,7 +262,7 @@ async function generateControllers() {
       }
       
       if (template) {
-        const viewContent = template({ entity, operation, pageConfig, searchFieldDefs });
+        const viewContent = template({ entity: entityForViews, operation, pageConfig, searchFieldDefs });
         const viewPath = path.join(viewsDir, filename);
         await fs.writeFile(viewPath, viewContent);
         console.log(chalk.gray(`  Generated ${viewPath}`));

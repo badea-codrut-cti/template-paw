@@ -25,7 +25,7 @@
             {{navigationProperty}}
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.{{navigationProperty}}.Nume)
+            @({{{displayInterpolationModel}}})
         </dd>
         {{/each}}
         {{/if}}

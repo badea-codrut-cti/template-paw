@@ -12,7 +12,7 @@ const appDescription: DefinitionsSchema = {
       name: "Concurs",
       table: "CONCURS",
       properties: [
-        { name: "Nume", type: "string", required: true, minLength: 3, maxLength: 100 },
+        { name: "Nume", type: "string", required: true, minLength: 3, maxLength: 100, showInRelations: true },
         { name: "Data", type: "DateTime", required: true },
         {
           name: "Categorie",
@@ -30,8 +30,8 @@ const appDescription: DefinitionsSchema = {
       name: "Concurent",
       table: "CONCURENT",
       properties: [
-        { name: "Nume", type: "string", required: true, minLength: 2, maxLength: 50 },
-        { name: "Prenume", type: "string", required: true, minLength: 2, maxLength: 50 },
+        { name: "Nume", type: "string", required: true, minLength: 2, maxLength: 50, showInRelations: true },
+        { name: "Prenume", type: "string", required: true, minLength: 2, maxLength: 50, showInRelations: true },
         { name: "DataNasterii", type: "DateTime", required: true },
         { name: "Tara", type: "string", required: true, minLength: 2, maxLength: 50 },
       ],
@@ -43,14 +43,14 @@ const appDescription: DefinitionsSchema = {
       name: "Band",
       table: "BAND",
       properties: [
-        { name: "Name", type: "string", required: true, minLength: 2, maxLength: 50 }
+        { name: "Name", type: "string", required: true, minLength: 2, maxLength: 50, showInRelations: true }
       ]
     },
     {
       name: "Singer",
       table: "SINGER",
       properties: [
-        { name: "Name", type: "string", required: true, minLength: 2, maxLength: 50 }
+        { name: "Name", type: "string", required: true, minLength: 2, maxLength: 50, showInRelations: true }
       ]
     }
   ],
