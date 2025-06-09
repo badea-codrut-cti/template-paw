@@ -22,7 +22,9 @@ namespace AspPrep.Controllers
         {{#if requiredRole}}
         [Authorize(Roles = "{{requiredRole}}")]
         {{/if}}
-        public async Task<IActionResult> Index({{#if ../pageConfig.searchFields}}{{#each ../pageConfig.searchFields}}string {{this}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}})
+        public async Task<IActionResult> Index({{#if searchFieldDefs}}{{#each searchFieldDefs}}
+            {{#if (eq type "string")}}string {{name}}{{#unless @last}}, {{/unless}}{{else if (eq type "int")}}int? {{name}}Min, int? {{name}}Max{{#unless @last}}, {{/unless}}{{else if (eq type "float")}}double? {{name}}Min, double? {{name}}Max{{#unless @last}}, {{/unless}}{{else if (eq type "Date")}}DateOnly? {{name}}Min, DateOnly? {{name}}Max{{#unless @last}}, {{/unless}}{{else if (eq type "DateTime")}}DateTime? {{name}}Min, DateTime? {{name}}Max{{#unless @last}}, {{/unless}}{{else}}string {{name}}{{#unless @last}}, {{/unless}}{{/if}}
+            {{/each}}{{/if}})
         {
             var query = _context.{{../entity.name}}.AsQueryable();
             {{#if ../entity.relations}}
@@ -30,12 +32,50 @@ namespace AspPrep.Controllers
                 {{#each ../entity.relations}}.Include(m => m.{{navigationProperty}}){{/each}}
                 .AsQueryable();
             {{/if}}
-            {{#if ../pageConfig.searchFields}}
-            {{#each ../pageConfig.searchFields}}
-            if (!string.IsNullOrEmpty({{this}}))
+            {{#if searchFieldDefs}}
+            {{#each searchFieldDefs}}
+            {{#if (eq type "string")}}
+            if (!string.IsNullOrEmpty({{name}}))
             {
-                query = query.Where(e => EF.Property<string>(e, "{{this}}").Contains({{this}}));
+                query = query.Where(e => EF.Property<string>(e, "{{name}}").Contains({{name}}));
             }
+            {{else if (eq type "int")}}
+            if ({{name}}Min.HasValue)
+            {
+                query = query.Where(e => EF.Property<int>(e, "{{name}}") >= {{name}}Min.Value);
+            }
+            if ({{name}}Max.HasValue)
+            {
+                query = query.Where(e => EF.Property<int>(e, "{{name}}") <= {{name}}Max.Value);
+            }
+            {{else if (eq type "float")}}
+            if ({{name}}Min.HasValue)
+            {
+                query = query.Where(e => EF.Property<double>(e, "{{name}}") >= {{name}}Min.Value);
+            }
+            if ({{name}}Max.HasValue)
+            {
+                query = query.Where(e => EF.Property<double>(e, "{{name}}") <= {{name}}Max.Value);
+            }
+            {{else if (eq type "Date")}}
+            if ({{name}}Min.HasValue)
+            {
+                query = query.Where(e => EF.Property<DateOnly>(e, "{{name}}") >= {{name}}Min.Value);
+            }
+            if ({{name}}Max.HasValue)
+            {
+                query = query.Where(e => EF.Property<DateOnly>(e, "{{name}}") <= {{name}}Max.Value);
+            }
+            {{else if (eq type "DateTime")}}
+            if ({{name}}Min.HasValue)
+            {
+                query = query.Where(e => EF.Property<DateTime>(e, "{{name}}") >= {{name}}Min.Value);
+            }
+            if ({{name}}Max.HasValue)
+            {
+                query = query.Where(e => EF.Property<DateTime>(e, "{{name}}") <= {{name}}Max.Value);
+            }
+            {{/if}}
             {{/each}}
             {{/if}}
             var items = await query.ToListAsync();

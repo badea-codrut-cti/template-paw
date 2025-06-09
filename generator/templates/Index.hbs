@@ -6,13 +6,21 @@
 
 <h1>{{entity.name}} List</h1>
 
-{{#if pageConfig.searchFields}}
+{{#if searchFieldDefs}}
 <form method="get" class="mb-3">
     <div class="row">
-        {{#each pageConfig.searchFields}}
+        {{#each searchFieldDefs}}
         <div class="col-md-3">
-            <label for="{{this}}" class="form-label">{{this}}</label>
-            <input type="text" class="form-control" id="{{this}}" name="{{this}}" value="@Context.Request.Query["{{this}}"]" />
+            {{#if (eq type "string")}}
+            <label for="{{name}}" class="form-label">{{name}}</label>
+            <input type="text" class="form-control" id="{{name}}" name="{{name}}" value="@Context.Request.Query["{{name}}"]" />
+            {{else}}
+            <label class="form-label">{{name}}</label>
+            <div class="input-group">
+                <input type="{{searchInputType type}}" class="form-control" id="{{name}}Min" name="{{name}}Min" placeholder="Min" value="@Context.Request.Query["{{name}}Min"]" />
+                <input type="{{searchInputType type}}" class="form-control" id="{{name}}Max" name="{{name}}Max" placeholder="Max" value="@Context.Request.Query["{{name}}Max"]" />
+            </div>
+            {{/if}}
         </div>
         {{/each}}
         <div class="col-md-3 d-flex align-items-end">

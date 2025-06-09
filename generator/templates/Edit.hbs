@@ -19,6 +19,8 @@
                 <label asp-for="{{name}}" class="control-label"></label>
                 {{#if (eq type "boolean")}}
                 <input asp-for="{{name}}" class="form-check-input" type="checkbox" {{clientValidation this}} />
+                {{else if (eq type "Date")}}
+                <input asp-for="{{name}}" class="form-control" type="date" {{clientValidation this}} />
                 {{else if (eq type "DateTime")}}
                 <input asp-for="{{name}}" class="form-control" type="datetime-local" {{clientValidation this}} />
                 {{else if (eq type "enum")}}
