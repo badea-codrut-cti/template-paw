@@ -180,9 +180,38 @@ function buildInterpolation(varName: string, nav: string, props: string[]): stri
   return `$"${inner}"`;
 }
 
-function buildSelectExpression(props: string[]): string {
-  const inner = props.map(p => `{m.${p}}`).join(' ');
+function buildSelectExpression(props: string[], varName: string = 'm'): string {
+  const inner = props.map(p => `{${varName}.${p}}`).join(' ');
   return `$"${inner}"`;
+}
+
+function getManyToManyForEntity(entityName: string) {
+  if (!appDescription.manyToMany) return [] as any[];
+  const mms: any[] = [];
+  for (const mm of appDescription.manyToMany) {
+    if (mm.entityA === entityName) {
+      const props = getDisplayProperties(mm.entityB);
+      mms.push({
+        joinEntity: mm.joinEntity,
+        otherEntity: mm.entityB,
+        thisKey: `${mm.entityA}Id`,
+        otherKey: `${mm.entityB}Id`,
+        selectExpression: buildSelectExpression(props),
+        detailsSelectExpression: buildSelectExpression(props, `j.${mm.entityB}`)
+      });
+    } else if (mm.entityB === entityName) {
+      const props = getDisplayProperties(mm.entityA);
+      mms.push({
+        joinEntity: mm.joinEntity,
+        otherEntity: mm.entityA,
+        thisKey: `${mm.entityB}Id`,
+        otherKey: `${mm.entityA}Id`,
+        selectExpression: buildSelectExpression(props),
+        detailsSelectExpression: buildSelectExpression(props, `j.${mm.entityA}`)
+      });
+    }
+  }
+  return mms;
 }
 
 async function generateControllers() {
@@ -191,12 +220,14 @@ async function generateControllers() {
   const createTemplate = await fs.readFile(path.join(__dirname, 'templates', 'Create.hbs'), 'utf8');
   const editTemplate = await fs.readFile(path.join(__dirname, 'templates', 'Edit.hbs'), 'utf8');
   const deleteTemplate = await fs.readFile(path.join(__dirname, 'templates', 'Delete.hbs'), 'utf8');
+  const detailsTemplate = await fs.readFile(path.join(__dirname, 'templates', 'Details.hbs'), 'utf8');
   
   const compileController = Handlebars.compile(controllerTemplate);
   const compileIndex = Handlebars.compile(indexTemplate);
   const compileCreate = Handlebars.compile(createTemplate);
   const compileEdit = Handlebars.compile(editTemplate);
   const compileDelete = Handlebars.compile(deleteTemplate);
+  const compileDetails = Handlebars.compile(detailsTemplate);
   
   for (const pageConfig of appDescription.pages) {
     const entity = appDescription.entities.find(e => e.name === pageConfig.entity);
@@ -216,6 +247,7 @@ async function generateControllers() {
       };
     });
 
+    const manyToMany = getManyToManyForEntity(entity.name);
     const entityForViews = { ...entity, relations: relationsWithDisplay };
 
     const searchFieldDefs = pageConfig.searchFields?.map(f => {
@@ -230,7 +262,12 @@ async function generateControllers() {
     };
 
     // Generate controller
-    const controllerContent = compileController({ entity: entityWithFk, pageConfig, searchFieldDefs });
+    const opsWithDetails = [...pageConfig.operations];
+    if (opsWithDetails.some(o => o.type === 'list')) {
+      opsWithDetails.push({ type: 'details' });
+    }
+
+    const controllerContent = compileController({ entity: entityWithFk, pageConfig: { ...pageConfig, operations: opsWithDetails }, searchFieldDefs, manyToMany });
     const controllerPath = path.join('AspPrep', 'Controllers', `${entity.name}Controller.cs`);
     await fs.ensureDir(path.dirname(controllerPath));
     await fs.writeFile(controllerPath, controllerContent);
@@ -240,7 +277,7 @@ async function generateControllers() {
     const viewsDir = path.join('AspPrep', 'Views', entity.name);
     await fs.ensureDir(viewsDir);
     
-    for (const operation of pageConfig.operations) {
+    for (const operation of opsWithDetails) {
       let template, filename;
       switch (operation.type) {
         case 'list':
@@ -259,10 +296,14 @@ async function generateControllers() {
           template = compileDelete;
           filename = 'Delete.cshtml';
           break;
+        case 'details':
+          template = compileDetails;
+          filename = 'Details.cshtml';
+          break;
       }
-      
+
       if (template) {
-        const viewContent = template({ entity: entityForViews, operation, pageConfig, searchFieldDefs });
+        const viewContent = template({ entity: entityForViews, operation, pageConfig, searchFieldDefs, manyToMany });
         const viewPath = path.join(viewsDir, filename);
         await fs.writeFile(viewPath, viewContent);
         console.log(chalk.gray(`  Generated ${viewPath}`));

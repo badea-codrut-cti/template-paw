@@ -83,6 +83,44 @@ namespace AspPrep.Controllers
         }
         {{/if}}
 
+        {{#if (eq type "details")}}
+        // GET: {{../entity.name}}/Details/5
+        {{#if requiredRole}}
+        [Authorize(Roles = "{{requiredRole}}")]
+        {{/if}}
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            {{#if ../entity.relations}}
+            var item = await _context.{{../entity.name}}
+                {{#each ../entity.relations}}.Include(m => m.{{navigationProperty}}){{/each}}
+                .FirstOrDefaultAsync(m => m.Id == id);
+            {{else}}
+            var item = await _context.{{../entity.name}}
+                .FirstOrDefaultAsync(m => m.Id == id);
+            {{/if}}
+            if (item == null)
+            {
+                return NotFound();
+            }
+            {{#if ../manyToMany}}
+            {{#each ../manyToMany}}
+            ViewData["{{otherEntity}}List"] = await _context.{{joinEntity}}
+                .Where(j => j.{{thisKey}} == item.Id)
+                .Include(j => j.{{otherEntity}})
+                .Select(j => new { j.{{otherEntity}}!.Id, DisplayName = {{{detailsSelectExpression}}} })
+                .ToListAsync();
+            {{/each}}
+            {{/if}}
+
+            return View(item);
+        }
+        {{/if}}
+
         {{#if (eq type "create")}}
         // GET: {{../entity.name}}/Create
         {{#if requiredRole}}
@@ -98,6 +136,14 @@ namespace AspPrep.Controllers
                 .ToList();
             {{/each}}
             {{/if}}
+            {{#if ../manyToMany}}
+            {{#each ../manyToMany}}
+            ViewData["All{{otherEntity}}"] = _context.{{otherEntity}}
+                .AsEnumerable()
+                .Select(m => new { m.Id, DisplayName = {{{selectExpression}}} })
+                .ToList();
+            {{/each}}
+            {{/if}}
             return View();
         }
 
@@ -107,12 +153,21 @@ namespace AspPrep.Controllers
         {{#if requiredRole}}
         [Authorize(Roles = "{{requiredRole}}")]
         {{/if}}
-        public async Task<IActionResult> Create([Bind("{{#each ../entity.properties}}{{name}}{{#unless @last}},{{/unless}}{{/each}}")] {{../entity.name}} item)
+        public async Task<IActionResult> Create([Bind("{{#each ../entity.properties}}{{name}}{{#unless @last}},{{/unless}}{{/each}}")] {{../entity.name}} item{{#if ../manyToMany}}, {{#each ../manyToMany}}int[] {{otherEntity}}Ids{{#unless @last}}, {{/unless}}{{/each}}{{/if}})
         {
             if (ModelState.IsValid)
             {
                 _context.Add(item);
                 await _context.SaveChangesAsync();
+                {{#if ../manyToMany}}
+                {{#each ../manyToMany}}
+                foreach (var oid in {{otherEntity}}Ids ?? Array.Empty<int>())
+                {
+                    _context.{{joinEntity}}.Add(new {{joinEntity}} { {{thisKey}} = item.Id, {{otherKey}} = oid });
+                }
+                {{/each}}
+                await _context.SaveChangesAsync();
+                {{/if}}
                 return RedirectToAction(nameof(Index));
             }
             {{#if ../entity.relations}}
@@ -121,6 +176,15 @@ namespace AspPrep.Controllers
                 .AsEnumerable()
                 .Select(m => new { m.Id, DisplayName = {{{selectExpression}}} })
                 .ToList();
+            {{/each}}
+            {{/if}}
+            {{#if ../manyToMany}}
+            {{#each ../manyToMany}}
+            ViewData["All{{otherEntity}}"] = _context.{{otherEntity}}
+                .AsEnumerable()
+                .Select(m => new { m.Id, DisplayName = {{{selectExpression}}} })
+                .ToList();
+            ViewData["Selected{{otherEntity}}Ids"] = {{otherEntity}}Ids.ToList();
             {{/each}}
             {{/if}}
             return View(item);
@@ -152,6 +216,18 @@ namespace AspPrep.Controllers
                 .ToList();
             {{/each}}
             {{/if}}
+            {{#if ../manyToMany}}
+            {{#each ../manyToMany}}
+            ViewData["All{{otherEntity}}"] = _context.{{otherEntity}}
+                .AsEnumerable()
+                .Select(m => new { m.Id, DisplayName = {{{selectExpression}}} })
+                .ToList();
+            ViewData["Selected{{otherEntity}}Ids"] = _context.{{joinEntity}}
+                .Where(j => j.{{thisKey}} == id)
+                .Select(j => j.{{otherKey}})
+                .ToList();
+            {{/each}}
+            {{/if}}
             return View(item);
         }
 
@@ -161,7 +237,7 @@ namespace AspPrep.Controllers
         {{#if requiredRole}}
         [Authorize(Roles = "{{requiredRole}}")]
         {{/if}}
-        public async Task<IActionResult> Edit(int id, [Bind("Id,{{#each ../entity.properties}}{{name}}{{#unless @last}},{{/unless}}{{/each}}")] {{../entity.name}} item)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,{{#each ../entity.properties}}{{name}}{{#unless @last}},{{/unless}}{{/each}}")] {{../entity.name}} item{{#if ../manyToMany}}, {{#each ../manyToMany}}int[] {{otherEntity}}Ids{{#unless @last}}, {{/unless}}{{/each}}{{/if}})
         {
             if (id != item.Id)
             {
@@ -174,6 +250,17 @@ namespace AspPrep.Controllers
                 {
                     _context.Update(item);
                     await _context.SaveChangesAsync();
+                    {{#if ../manyToMany}}
+                    {{#each ../manyToMany}}
+                    var existing{{otherEntity}} = _context.{{joinEntity}}.Where(j => j.{{thisKey}} == item.Id);
+                    _context.{{joinEntity}}.RemoveRange(existing{{otherEntity}});
+                    foreach (var oid in {{otherEntity}}Ids ?? Array.Empty<int>())
+                    {
+                        _context.{{joinEntity}}.Add(new {{joinEntity}} { {{thisKey}} = item.Id, {{otherKey}} = oid });
+                    }
+                    {{/each}}
+                    await _context.SaveChangesAsync();
+                    {{/if}}
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -194,6 +281,15 @@ namespace AspPrep.Controllers
                 .AsEnumerable()
                 .Select(m => new { m.Id, DisplayName = {{{selectExpression}}} })
                 .ToList();
+            {{/each}}
+            {{/if}}
+            {{#if ../manyToMany}}
+            {{#each ../manyToMany}}
+            ViewData["All{{otherEntity}}"] = _context.{{otherEntity}}
+                .AsEnumerable()
+                .Select(m => new { m.Id, DisplayName = {{{selectExpression}}} })
+                .ToList();
+            ViewData["Selected{{otherEntity}}Ids"] = {{otherEntity}}Ids.ToList();
             {{/each}}
             {{/if}}
             return View(item);

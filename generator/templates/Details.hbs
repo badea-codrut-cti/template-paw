@@ -1,0 +1,50 @@
+@model AspPrep.Models.{{entity.name}}
+
+@{
+    ViewData["Title"] = "{{entity.name}} Details";
+}
+
+<h1>{{entity.name}} Details</h1>
+
+<div>
+    <h4>{{entity.name}}</h4>
+    <hr />
+    <dl class="row">
+        {{#each entity.properties}}
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.{{name}})
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.{{name}})
+        </dd>
+        {{/each}}
+        {{#if entity.relations}}
+        {{#each entity.relations}}
+        <dt class="col-sm-2">
+            {{navigationProperty}}
+        </dt>
+        <dd class="col-sm-10">
+            @({{{displayInterpolationModel}}})
+        </dd>
+        {{/each}}
+        {{/if}}
+        {{#if manyToMany}}
+        {{#each manyToMany}}
+        <dt class="col-sm-2">
+            {{otherEntity}}
+        </dt>
+        <dd class="col-sm-10">
+            <ul>
+            @foreach (var rel in ViewData["{{otherEntity}}List"] as IEnumerable<dynamic>) {
+                <li>@rel.DisplayName</li>
+            }
+            </ul>
+        </dd>
+        {{/each}}
+        {{/if}}
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a> |
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>
