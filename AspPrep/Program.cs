@@ -5,8 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using System.IO;
 
-record SeedUser(string Email, string Password, string[] Roles);
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -35,17 +33,26 @@ using (var scope = app.Services.CreateScope())
         {
             roleManager.CreateAsync(new IdentityRole(role)).Wait();
         }
-    }
-
-    var seedFile = Path.Combine(app.Environment.ContentRootPath, "seedUsers.json");
+    }    var seedFile = Path.Combine(app.Environment.ContentRootPath, "seedUsers.json");
     if (File.Exists(seedFile))
     {
         var json = File.ReadAllText(seedFile);
-        var seedUsers = JsonSerializer.Deserialize<List<SeedUser>>(json);
-        if (seedUsers != null)
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+        var seedUsers = JsonSerializer.Deserialize<List<SeedUser>>(json, options);        if (seedUsers != null)
         {
             foreach (var seed in seedUsers)
             {
+                // Skip if any required field is null or empty
+                if (string.IsNullOrWhiteSpace(seed.Email) || 
+                    string.IsNullOrWhiteSpace(seed.Password) || 
+                    seed.Roles == null)
+                {
+                    continue;
+                }
+
                 var user = userManager.FindByEmailAsync(seed.Email).Result;
                 if (user == null)
                 {
@@ -54,7 +61,7 @@ using (var scope = app.Services.CreateScope())
                 }
                 foreach (var role in seed.Roles)
                 {
-                    if (!userManager.IsInRoleAsync(user, role).Result)
+                    if (!string.IsNullOrWhiteSpace(role) && !userManager.IsInRoleAsync(user, role).Result)
                     {
                         userManager.AddToRoleAsync(user, role).Wait();
                     }
@@ -93,3 +100,5 @@ app.MapRazorPages()
    .WithStaticAssets();
 
 app.Run();
+
+record SeedUser(string Email, string Password, string[] Roles);
