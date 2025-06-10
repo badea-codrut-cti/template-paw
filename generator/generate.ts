@@ -265,6 +265,16 @@ async function generateControllers() {
       return { name: f, type: prop?.type || 'string' };
     });
 
+    const sortFieldDefs = pageConfig.sortBy?.map(f => {
+      const prop = entity.properties.find(p => p.name === f);
+      if (!prop) {
+        console.warn(
+          chalk.yellow(`Warning: Page "${pageConfig.entity}" references unknown sort field "${f}"`)
+        );
+      }
+      return { name: f, type: prop?.type || 'string' };
+    });
+
     const entityWithFk: GeneratorEntityDefinition = {
       ...entity,
       relations: relationsWithDisplay,
@@ -277,7 +287,7 @@ async function generateControllers() {
       opsWithDetails.push({ type: 'details' });
     }
 
-    const controllerContent = compileController({ entity: entityWithFk, pageConfig: { ...pageConfig, operations: opsWithDetails }, searchFieldDefs, manyToMany });
+    const controllerContent = compileController({ entity: entityWithFk, pageConfig: { ...pageConfig, operations: opsWithDetails }, searchFieldDefs, sortFieldDefs, manyToMany });
     const controllerPath = path.join('AspPrep', 'Controllers', `${entity.name}Controller.cs`);
     await fs.ensureDir(path.dirname(controllerPath));
     await fs.writeFile(controllerPath, controllerContent);
@@ -313,7 +323,7 @@ async function generateControllers() {
       }
 
       if (template) {
-        const viewContent = template({ entity: entityForViews, operation, pageConfig, searchFieldDefs, manyToMany });
+        const viewContent = template({ entity: entityForViews, operation, pageConfig, searchFieldDefs, sortFieldDefs, manyToMany });
         const viewPath = path.join(viewsDir, filename);
         await fs.writeFile(viewPath, viewContent);
         console.log(chalk.gray(`  Generated ${viewPath}`));
@@ -371,6 +381,8 @@ Handlebars.registerHelper('searchInputType', (type: string) => {
       return 'date';
     case 'DateTime':
       return 'datetime-local';
+    case 'boolean':
+      return 'checkbox';
     default:
       return 'text';
   }
