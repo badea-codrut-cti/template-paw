@@ -109,6 +109,13 @@ const appDescription: DefinitionsSchema = {
       ],
       searchFields: ["Name"]
     }
+  ],
+  seedUsers: [
+    {
+      email: "oreoezi@oreo.ac",
+      password: "Bobita1!",
+      roles: ["Admin"]
+    }
   ]
 };
 

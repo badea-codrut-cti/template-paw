@@ -35,8 +35,7 @@ dotnet run
 Application will be available at `https://localhost:5001`
 
 ### 4. Default Admin User
-- Email: `oreoezi@oreo.ac`
-- Password: `Bobita1!`
+Default admin credentials are specified in `generator/appdescription.ts` under `seedUsers`.
 
 ## Code Generation System
 

@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AspPrep.Data;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
+using System.IO;
+
+record SeedUser(string Email, string Password, string[] Roles);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,14 +36,31 @@ using (var scope = app.Services.CreateScope())
             roleManager.CreateAsync(new IdentityRole(role)).Wait();
         }
     }
-    var adminEmail = "oreoezi@oreo.ac";
-    var adminPassword = "Bobita1!";
-    var adminUser = userManager.FindByEmailAsync(adminEmail).Result;
-    if (adminUser == null)
+
+    var seedFile = Path.Combine(app.Environment.ContentRootPath, "seedUsers.json");
+    if (File.Exists(seedFile))
     {
-        adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
-        userManager.CreateAsync(adminUser, adminPassword).Wait();
-        userManager.AddToRoleAsync(adminUser, "Admin").Wait();
+        var json = File.ReadAllText(seedFile);
+        var seedUsers = JsonSerializer.Deserialize<List<SeedUser>>(json);
+        if (seedUsers != null)
+        {
+            foreach (var seed in seedUsers)
+            {
+                var user = userManager.FindByEmailAsync(seed.Email).Result;
+                if (user == null)
+                {
+                    user = new IdentityUser { UserName = seed.Email, Email = seed.Email, EmailConfirmed = true };
+                    userManager.CreateAsync(user, seed.Password).Wait();
+                }
+                foreach (var role in seed.Roles)
+                {
+                    if (!userManager.IsInRoleAsync(user, role).Result)
+                    {
+                        userManager.AddToRoleAsync(user, role).Wait();
+                    }
+                }
+            }
+        }
     }
 }
 
