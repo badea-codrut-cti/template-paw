@@ -244,3 +244,14 @@ dotnet aspnet-codegenerator --help
 - All validation is automatically generated from schema
 - Default admin user is pre-configured
 - No internet required after initial setup
+
+```C#
+var humanCount  = await _context.Participant
+.CountAsync(p => p.AtelierId == item.AtelierId);
+
+if (humanCount >= item.Atelier!.NrMaxParticipanti)
+{
+  ModelState.AddModelError("AtelierId", "Atelierul a atins numarul maxim de participanti.");
+  return View();
+}
+```
