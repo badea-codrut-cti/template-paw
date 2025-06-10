@@ -77,7 +77,8 @@ const appDescription: DefinitionsSchema = {
         { type: "update", requiredRole: "Admin" },
         { type: "delete", requiredRole: "Admin" }
       ],
-      searchFields: ["Nume", "Categorie"]
+      searchFields: ["Nume", "Categorie"],
+      sortBy: ["Nume", "Data"]
     },
     {
       entity: "Concurent",
@@ -87,7 +88,8 @@ const appDescription: DefinitionsSchema = {
         { type: "update", requiredRole: "Admin" },
         { type: "delete", requiredRole: "Admin" }
       ],
-      searchFields: ["Nume", "Prenume", "Tara"]
+      searchFields: ["Nume", "Prenume", "Tara"],
+      sortBy: ["Nume", "Prenume"]
     },
     {
       entity: "Band",
@@ -97,7 +99,8 @@ const appDescription: DefinitionsSchema = {
         { type: "update", requiredRole: "Admin" },
         { type: "delete", requiredRole: "Admin" }
       ],
-      searchFields: ["Name"]
+      searchFields: ["Name"],
+      sortBy: ["Name"]
     },
     {
       entity: "Singer",
@@ -107,7 +110,8 @@ const appDescription: DefinitionsSchema = {
         { type: "update", requiredRole: "Admin" },
         { type: "delete", requiredRole: "Admin" }
       ],
-      searchFields: ["Name"]
+      searchFields: ["Name"],
+      sortBy: ["Name"]
     }
   ],
   seedUsers: [

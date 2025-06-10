@@ -22,8 +22,18 @@ namespace AspPrep.Controllers
         {{#if requiredRole}}
         [Authorize(Roles = "{{requiredRole}}")]
         {{/if}}
-        public async Task<IActionResult> Index({{#if searchFieldDefs}}{{#each searchFieldDefs}}
-            {{#if (eq type "string")}}string {{name}}{{#unless @last}}, {{/unless}}{{else if (eq type "int")}}int? {{name}}Min, int? {{name}}Max{{#unless @last}}, {{/unless}}{{else if (eq type "float")}}double? {{name}}Min, double? {{name}}Max{{#unless @last}}, {{/unless}}{{else if (eq type "Date")}}DateOnly? {{name}}Min, DateOnly? {{name}}Max{{#unless @last}}, {{/unless}}{{else if (eq type "DateTime")}}DateTime? {{name}}Min, DateTime? {{name}}Max{{#unless @last}}, {{/unless}}{{else}}string {{name}}{{#unless @last}}, {{/unless}}{{/if}}
+        public async Task<IActionResult> Index(
+            {{#if @root.searchFieldDefs}}{{#each @root.searchFieldDefs}}
+            {{#if (eq type "string")}}string {{name}}{{#unless @last}}, {{/unless}}
+            {{else if (eq type "int")}}int? {{name}}Min, int? {{name}}Max{{#unless @last}}, {{/unless}}
+            {{else if (eq type "float")}}double? {{name}}Min, double? {{name}}Max{{#unless @last}}, {{/unless}}
+            {{else if (eq type "Date")}}DateOnly? {{name}}Min, DateOnly? {{name}}Max{{#unless @last}}, {{/unless}}
+            {{else if (eq type "DateTime")}}DateTime? {{name}}Min, DateTime? {{name}}Max{{#unless @last}}, {{/unless}}
+            {{else if (eq type "boolean")}}bool? {{name}}{{#unless @last}}, {{/unless}}
+            {{else}}string {{name}}{{#unless @last}}, {{/unless}}{{/if}}
+            {{/each}}{{/if}}
+            {{#if @root.sortFieldDefs}}{{#if @root.searchFieldDefs}}, {{/if}}{{#each @root.sortFieldDefs}}
+            string sort{{name}}{{#unless @last}}, {{/unless}}
             {{/each}}{{/if}})
         {
             var query = _context.{{../entity.name}}.AsQueryable();
@@ -32,8 +42,8 @@ namespace AspPrep.Controllers
                 {{#each ../entity.relations}}.Include(m => m.{{navigationProperty}}){{/each}}
                 .AsQueryable();
             {{/if}}
-            {{#if searchFieldDefs}}
-            {{#each searchFieldDefs}}
+            {{#if @root.searchFieldDefs}}
+            {{#each @root.searchFieldDefs}}
             {{#if (eq type "string")}}
             if (!string.IsNullOrEmpty({{name}}))
             {
@@ -75,8 +85,37 @@ namespace AspPrep.Controllers
             {
                 query = query.Where(e => EF.Property<DateTime>(e, "{{name}}") <= {{name}}Max.Value);
             }
+            {{else if (eq type "boolean")}}
+            if ({{name}}.HasValue)
+            {
+                query = query.Where(e => EF.Property<bool>(e, "{{name}}") == {{name}}.Value);
+            }
             {{/if}}
             {{/each}}
+            {{/if}}
+            {{#if @root.sortFieldDefs}}
+            IOrderedQueryable<{{../entity.name}}> orderedQuery = null;
+            {{#each @root.sortFieldDefs}}
+            if (!string.IsNullOrEmpty(sort{{name}}))
+            {
+                if (orderedQuery == null)
+                {
+                    orderedQuery = sort{{name}} == "asc"
+                        ? query.OrderBy(e => EF.Property<object>(e, "{{name}}"))
+                        : query.OrderByDescending(e => EF.Property<object>(e, "{{name}}"));
+                }
+                else
+                {
+                    orderedQuery = sort{{name}} == "asc"
+                        ? orderedQuery.ThenBy(e => EF.Property<object>(e, "{{name}}"))
+                        : orderedQuery.ThenByDescending(e => EF.Property<object>(e, "{{name}}"));
+                }
+            }
+            {{/each}}
+            if (orderedQuery != null)
+            {
+                query = orderedQuery;
+            }
             {{/if}}
             var items = await query.ToListAsync();
             return View(items);

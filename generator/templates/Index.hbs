@@ -7,13 +7,18 @@
 <h1>{{entity.name}} List</h1>
 
 {{#if searchFieldDefs}}
-<form method="get" class="mb-3">
+<form method="get" class="mb-3" id="searchForm">
     <div class="row">
         {{#each searchFieldDefs}}
         <div class="col-md-3">
             {{#if (eq type "string")}}
             <label for="{{name}}" class="form-label">{{name}}</label>
             <input type="text" class="form-control" id="{{name}}" name="{{name}}" value="@Context.Request.Query["{{name}}"]" />
+            {{else if (eq type "boolean")}}
+            <div class="form-check mt-4">
+                <input type="checkbox" class="form-check-input" id="{{name}}" name="{{name}}" value="true" @(Context.Request.Query["{{name}}"] == "true" ? "checked" : "") />
+                <label for="{{name}}" class="form-check-label">{{name}}</label>
+            </div>
             {{else}}
             <label class="form-label">{{name}}</label>
             <div class="input-group">
@@ -25,9 +30,29 @@
         {{/each}}
         <div class="col-md-3 d-flex align-items-end">
             <button type="submit" class="btn btn-primary me-2">Search</button>
-            <a href="@Url.Action("Index")" class="btn btn-secondary">Clear</a>
+            <a href="@Url.Action("Index")" class="btn btn-secondary me-2">Clear</a>
+            {{#if sortFieldDefs}}
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">Sort</button>
+                <ul class="dropdown-menu">
+                    {{#each sortFieldDefs}}
+                    <li>
+                        <a href="#" class="dropdown-item sort-toggle" data-input="sort{{name}}">
+                            {{name}}
+                            @(Context.Request.Query["sort{{name}}"] == "asc" ? "▲" : (Context.Request.Query["sort{{name}}"] == "desc" ? "▼" : ""))
+                        </a>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+            {{/if}}
         </div>
     </div>
+    {{#if sortFieldDefs}}
+    {{#each sortFieldDefs}}
+    <input type="hidden" id="sort{{name}}" name="sort{{name}}" value="@Context.Request.Query["sort{{name}}"]" />
+    {{/each}}
+    {{/if}}
 </form>
 {{/if}}
 
@@ -76,3 +101,21 @@
 }
     </tbody>
 </table>
+{{#if sortFieldDefs}}
+@section Scripts {
+<script>
+document.querySelectorAll('.sort-toggle').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+        e.preventDefault();
+        var input = document.getElementById(this.dataset.input);
+        var val = input.value;
+        if (!val) val = 'asc';
+        else if (val === 'asc') val = 'desc';
+        else val = '';
+        input.value = val;
+        document.getElementById('searchForm').submit();
+    });
+});
+</script>
+}
+{{/if}}

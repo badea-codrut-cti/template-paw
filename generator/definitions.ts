@@ -115,6 +115,7 @@ export interface PageDefinition {
   entity: string;
   operations: OperationDefinition[];
   searchFields?: string[]; // deprecated queryParams, use searchFields for listing filters
+  sortBy?: string[]; // fields available for sorting in list pages
 }
 
 /**
