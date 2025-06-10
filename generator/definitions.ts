@@ -101,7 +101,7 @@ export interface ManyToManyDefinition {
 /**
  * CRUD operations for Razor Pages, with optional role restriction.
  */
-export type PageOperation = 'list' | 'create' | 'update' | 'delete';
+export type PageOperation = 'list' | 'create' | 'update' | 'delete' | 'details';
 
 export interface OperationDefinition {
   type: PageOperation;
