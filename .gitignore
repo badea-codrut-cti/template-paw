@@ -6,6 +6,7 @@ yarn-error.log*
 dist/
 coverage/
 *.tsbuildinfo
+seedUsers.json
 
 # Logs
 logs/
