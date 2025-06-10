@@ -91,6 +91,15 @@ program
   });
 
 program
+  .command('seedusers')
+  .description('Generate seed users file')
+  .action(async () => {
+    console.log(chalk.blue('Generating seed users...'));
+    await generateSeedUsers();
+    console.log(chalk.green('✓ Seed users generated'));
+  });
+
+program
   .command('all')
   .description('Generate all code')
   .action(async () => {
@@ -99,6 +108,7 @@ program
     await generateDbContext();
     await generateControllers();
     await generateLayout();
+    await generateSeedUsers();
     console.log(chalk.green('✓ All code generated'));
   });
 
@@ -323,6 +333,14 @@ async function generateLayout() {
   const outputPath = path.join('AspPrep', 'Views', 'Shared', '_Layout.cshtml');
   await fs.ensureDir(path.dirname(outputPath));
   await fs.writeFile(outputPath, content);
+  console.log(chalk.gray(`  Generated ${outputPath}`));
+}
+
+async function generateSeedUsers() {
+  if (!appDescription.seedUsers) return;
+  const outputPath = path.join('AspPrep', 'seedUsers.json');
+  await fs.ensureDir(path.dirname(outputPath));
+  await fs.writeJson(outputPath, appDescription.seedUsers, { spaces: 2 });
   console.log(chalk.gray(`  Generated ${outputPath}`));
 }
 

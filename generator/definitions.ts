@@ -126,6 +126,15 @@ export interface RoleDefinition {
 }
 
 /**
+ * Seed user definition used for initial user creation.
+ */
+export interface SeedUserDefinition {
+  email: string;
+  password: string;
+  roles: string[];
+}
+
+/**
  * Entity schema definition.
  */
 export interface EntityDefinition {
@@ -162,4 +171,5 @@ export interface DefinitionsSchema {
   defaults: DefaultDefinitions;
   roles: RoleDefinition[];
   pages: PageDefinition[];
+  seedUsers?: SeedUserDefinition[];
 }
